@@ -68,7 +68,7 @@ class _HomePageState extends State<homePage> {
   Future<void> getUserDetails() async {
      String userid =  _fireAuth.currentUser!.uid;
     DocumentSnapshot documentSnapshot =
-        await _firestore.collection('tenant').doc(userid).get();
+        await _firestore.collection('tenants').doc(userid).get();
 
     Map<String, dynamic>? userData =
         documentSnapshot.data() as Map<String, dynamic>?;
@@ -155,7 +155,6 @@ class _HomePageState extends State<homePage> {
               icon: Icon(Icons.airplane_ticket), label: 'Request'),
           BottomNavigationBarItem(
               icon: Icon(Icons.request_page), label: 'Transactions'),
-          BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Messages'),
           BottomNavigationBarItem(
               icon: Icon(Icons.notifications), label: 'Notifications'),
         ],
