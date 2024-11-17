@@ -52,6 +52,8 @@ class _LoginPageState extends State<LoginPage> {
         if(documentSnapshot.exists){
           Map<String,dynamic> userData = documentSnapshot.data() as Map<String,dynamic>;
 
+          Navigator.push(context, MaterialPageRoute(builder: (context)=> homePage(userid: userCredential.user!.uid)));
+    /*
         await _fireAuth.verifyPhoneNumber(
         phoneNumber: '+63${userData['contact']}',
         verificationCompleted: (PhoneAuthCredential credential) async {
@@ -63,6 +65,7 @@ class _LoginPageState extends State<LoginPage> {
         },
         codeAutoRetrievalTimeout: _handleCodeAutoRetrievalTimeout,
       );
+      */
     } 
 
     
@@ -76,6 +79,13 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _showErrorSnackBar(String Messages) async{
+    if(!mounted) return;
+     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('An Error Occured'),backgroundColor: Colors.red[200],)); 
+  
+  }
+
+/*
   Future<void> _handlePhoneVerificationComplete(PhoneAuthCredential credential, String userId) async {
     try {
       await _fireAuth.currentUser?.updatePhoneNumber(credential);
@@ -184,15 +194,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void _showErrorSnackBar(String message) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
+ 
 
   String _getFirebaseErrorMessage(String code) {
     switch (code) {
@@ -206,7 +208,7 @@ class _LoginPageState extends State<LoginPage> {
         return 'An error occurred during registration';
     }
   }
-
+*/
 
   @override
   Widget build(BuildContext context) {

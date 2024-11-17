@@ -4,7 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:my_app/Tenant/borrowKeyPage.dart';
+import 'package:my_app/Tenant/complainRequest.dart';
+
 import 'package:my_app/Tenant/maintenanceRequestPage.dart';
 import 'package:my_app/Tenant/paymentTransaction.dart';
 import 'package:my_app/Tenant/settingsPage.dart';
@@ -387,14 +388,14 @@ class _HomePageState extends State<homePage> {
           Card(
             child: ListTile(
               tileColor: const Color.fromARGB(185, 248, 248, 248),
-              title: const Text('Borrow keys'),
+              title: const Text('Complain Request'),
               leading: const Icon(Icons.key),
               onTap: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => borrowKeyPage(
-                            userid: widget.userid, username: username)));
+                        builder: (context) =>
+                           complainRequest()));
               },
             ),
           ),
