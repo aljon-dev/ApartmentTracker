@@ -18,6 +18,10 @@ class _MaintenancerequestpageState extends State<Maintenancerequestpage> {
   final _firestore = FirebaseFirestore.instance;
   final picker = ImagePicker();
 
+    
+  List<String> priority = ['Low', 'Medium', 'High'];
+    String? selectedPriority;
+
   String username = "";
 
   File? _imageFile;
@@ -47,22 +51,34 @@ class _MaintenancerequestpageState extends State<Maintenancerequestpage> {
         imageUrl = await storageRef.getDownloadURL();
       }
       await _firestore.collection('maintenance_request').add({
-        'image': imageUrl,
-        'message': _messageController.text,
-        'status': "pending",
-        'tenant': username,
-        'uid': widget.userid,
+        'Image': imageUrl,
+        'Message': _messageController.text,
+        'Status': "pending",
+        'Priority': selectedPriority,
+        'Userid': widget.userid,
       });
+
+          final notifications  =  {
+          'Title':'Maintenance Request',
+          'Message':_messageController.text,
+          'Types': 'Maintenance',
+          'DateTime':Timestamp.now(),
+          'userid':'userAdmin'
+         };
+
+    await  _firestore.collection('Notifications').add(notifications);
+
+
       _messageController.text = "";
       _imageFile = null;
 
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Send Request Successfully')));
+          const SnackBar(content: Text('Send Request Successfully'),backgroundColor: Colors.green,));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e'),backgroundColor: Colors.red,));
     }
   }
-
+/*
   Future<void> getUserDetails() async {
     DocumentSnapshot getuser =
         await _firestore.collection('tenant').doc(widget.userid).get();
@@ -78,7 +94,7 @@ class _MaintenancerequestpageState extends State<Maintenancerequestpage> {
     super.initState();
     getUserDetails();
   }
-
+ */
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,12 +105,36 @@ class _MaintenancerequestpageState extends State<Maintenancerequestpage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+             const Text('Priority Level',style:TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              SizedBox(
+                width: double.infinity,
+                child: DropdownButton<String>(
+                  value: selectedPriority,
+                  isExpanded: true,
+                  hint: const Text('Select Priority'),
+                  items: priority.map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedPriority = newValue;
+                    });
+                  },
+                ),
+              ),
+
+
                 const Text('Maintenance Request',
                     style:
                         TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 20),
                 const Text('Message:', style: TextStyle(fontSize: 20)),
-                const SizedBox(height: 20),
+                const SizedBox(height: 10),
+
+              
                 TextField(
                     controller: _messageController,
                     maxLines: 5,
