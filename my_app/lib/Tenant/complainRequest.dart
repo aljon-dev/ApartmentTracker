@@ -123,10 +123,120 @@ Future<void> _selectDate(BuildContext context) async {
      }
     }
 
-    void  showEditDialog(context){
+   void showEditDialog(BuildContext context, String complainId, Map<String, dynamic> complaintData) {
+  TextEditingController editTitleController =
+      TextEditingController(text: complaintData['Title']);
+  TextEditingController editDetailsController =
+      TextEditingController(text: complaintData['Details']);
+  String? editSelectedPriority = complaintData['Priority'];
+  DateTime? editSelectedDate = DateFormat('yyyy-MM-dd').parse(complaintData['Date']);
 
-
-    }
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Edit Complaint'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Priority',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              DropdownButton<String>(
+                value: editSelectedPriority,
+                isExpanded: true,
+                hint: const Text('Select Priority'),
+                items: priority.map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  editSelectedPriority = newValue;
+                },
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Complain Title',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              TextFormField(
+                controller: editTitleController,
+                decoration: const InputDecoration(border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Complain Details',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              TextFormField(
+                controller: editDetailsController,
+                maxLines: 3,
+                decoration: const InputDecoration(border: OutlineInputBorder()),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () async {
+                  final DateTime? pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: editSelectedDate ?? DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                  );
+                  if (pickedDate != null) {
+                    editSelectedDate = pickedDate;
+                  }
+                },
+                child: const Text('Select Date'),
+              ),
+              Text(
+                editSelectedDate != null
+                    ? 'Date: ${DateFormat('dd/MM/yyyy').format(editSelectedDate!)}'
+                    : 'No Date Selected',
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                await _firestore.collection('Complaints').doc(complainId).update({
+                  'Title': editTitleController.text,
+                  'Details': editDetailsController.text,
+                  'Priority': editSelectedPriority,
+                  'Date': DateFormat('yyyy-MM-dd').format(editSelectedDate!),
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Complaint updated successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+                Navigator.of(context).pop();
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Error updating complaint: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      );
+    },
+  );
+}
 
 
   @override
@@ -287,7 +397,8 @@ Future<void> _selectDate(BuildContext context) async {
                                 IconButton(
                                icon: const Icon(Icons.edit, color: Colors.yellowAccent),
                                onPressed: () {
-              
+
+                                    showEditDialog(context, complainId, complaints.data() as Map<String,dynamic>);
             
                               },
                               ),
