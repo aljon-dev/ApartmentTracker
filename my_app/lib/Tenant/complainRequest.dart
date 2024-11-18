@@ -86,6 +86,7 @@ Future<void> _selectDate(BuildContext context) async {
               'Details':complainTextController.text,
               'Priority':selectedPriority,
               'Date':FormattedDate,
+              'Status':'Pending',
               'userid':_fireAuth.currentUser!.uid
         };
 
@@ -94,6 +95,7 @@ Future<void> _selectDate(BuildContext context) async {
                 'Message':complainTextController.text,
                 'Types': 'Complaint',
                 'DateTime':Timestamp.now()
+                
             };
 
       _firestore.collection('Notifications').add(notifications);
@@ -120,6 +122,12 @@ Future<void> _selectDate(BuildContext context) async {
       }
      }
     }
+
+    void  showEditDialog(context){
+
+
+    }
+
 
   @override
   void dispose() {
@@ -219,9 +227,107 @@ Future<void> _selectDate(BuildContext context) async {
                 child: const Text('Send Complaint'),
               ),
               ),
-              const SizedBox(height: 10,)
-              
+              const SizedBox(height: 10,),
+              Container(
+                height: 200,
+                child: StreamBuilder<QuerySnapshot>(
+              stream: _firestore.collection('Complaints')
+              .where('userid',isEqualTo: _fireAuth.currentUser!.uid)
+              .snapshots(),
+              builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshots){
 
+                    if(snapshots.hasError){
+                      return Text('Error: ${snapshots.error}');
+                    }
+                    if(!snapshots.hasData){
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                final complaint = snapshots.data!.docs;
+
+              return ListView.builder(
+             
+                itemCount: complaint.length,
+              
+                itemBuilder: (context,index){
+                  final complaints = complaint[index];
+
+                  String complainId = complaint[index].id;
+
+
+                  return Card(
+                    color:Colors.blue[200],
+                    child: Padding(padding: EdgeInsets.all(16),
+                    child: Container(
+
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('${complaints['Title']}',style: 
+                          const TextStyle(fontSize: 20,
+                          fontWeight:FontWeight.bold),
+                          ),
+                          const SizedBox(height:5,),
+
+                          Text('${complaints['Details']}',style: 
+                          const TextStyle(fontSize: 14,
+                          ),
+                          ),
+
+                           const SizedBox(height:5,),
+                          Text('${complaints['Date']}',style: 
+                          const TextStyle(fontSize: 14,
+                          ),
+                          ),
+
+                          Row(
+                           mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                                
+                                IconButton(
+                               icon: const Icon(Icons.edit, color: Colors.yellowAccent),
+                               onPressed: () {
+              
+            
+                              },
+                              ),
+                             IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () async {
+                              try{
+                              _firestore.collection('Complaints').doc(complainId).delete();
+                             ScaffoldMessenger.of(context)
+                             .showSnackBar(
+                             SnackBar(content: Text('Successfully Deleted')
+                             ,backgroundColor: Colors.green,));
+
+                              }catch(e){
+
+                              ScaffoldMessenger.of(context)
+                             .showSnackBar(
+                             SnackBar(content: Text('Failed to Delete A Complaint')
+                             ,backgroundColor: Colors.red,));
+
+                              }
+                                } ,
+                              ),                       
+                            ],
+                          )
+
+                        
+                          
+                        ],
+                      )
+
+                    ),
+                    )
+                    
+                  );
+                 
+                });
+              }) ,
+              )
+             
             ],
           ),
         ),
