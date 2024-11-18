@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class notificationPage extends StatefulWidget {
-  final String userid;
 
-  const notificationPage({Key? key, required this.userid}) : super(key: key);
+
+  const notificationPage({Key? key}) : super(key: key);
 
   @override
   _notificationPageState createState() => _notificationPageState();
@@ -23,7 +23,7 @@ class _notificationPageState extends State<notificationPage> {
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestore
             .collection('notifications')
-            .where('userId', isEqualTo: widget.userid)
+           /* .where('userId', isEqualTo: widget.userid) */
             .orderBy('timestamp', descending: true)
             .snapshots(),
         builder: (context, snapshot) {

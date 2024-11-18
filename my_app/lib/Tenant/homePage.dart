@@ -133,7 +133,9 @@ class _HomePageState extends State<homePage> {
             ],
           ),
           actions: [
-            IconButton(onPressed: () {}, icon: const Icon(Icons.notifications))
+            IconButton(onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> notificationPage()));
+            }, icon: const Icon(Icons.notifications))
           ]),
       body: PageView(
         controller: _pageController,
@@ -146,7 +148,7 @@ class _HomePageState extends State<homePage> {
           _buildHomePage(),
           _RequestPage(), // Request Screen
           _TransactionHistory(), // Transactions Screen
-          notificationPage(userid: widget.userid),
+        
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -155,9 +157,8 @@ class _HomePageState extends State<homePage> {
           BottomNavigationBarItem(
               icon: Icon(Icons.airplane_ticket), label: 'Request'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.request_page), label: 'Transactions'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.notifications), label: 'Notifications'),
+              icon: Icon(Icons.request_page), label: 'History'),
+         
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
