@@ -13,7 +13,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-    String _selectedRole = 'tenant';
+    String _selectedRole = 'Tenant';
     final _formKey = GlobalKey<FormState>();
   final _fireAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
@@ -252,7 +252,7 @@ class _LoginPageState extends State<LoginPage> {
                         borderSide: BorderSide.none,
                       ),
                     ),
-                    items: ['tenant', 'Sub-account']
+                    items: ['Tenant', 'Sub-account']
                         .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem(value: value, child: Text(value));
                     }).toList(),
