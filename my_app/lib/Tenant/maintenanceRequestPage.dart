@@ -60,11 +60,12 @@ class _MaintenancerequestpageState extends State<Maintenancerequestpage> {
       });
 
           final notifications  =  {
-          'Title':'Maintenance Request',
-          'Message':_messageController.text,
-          'Types': 'Maintenance',
-          'DateTime':Timestamp.now(),
-          'userid':'userAdmin'
+          'isRead':false,
+          'title':'Maintenance Request',
+          'message':_messageController.text,
+          'type': 'Maintenance',
+          'timestamp':Timestamp.now(),
+          'userId':'userAdmin'
          };
 
     await  _firestore.collection('Notifications').add(notifications);

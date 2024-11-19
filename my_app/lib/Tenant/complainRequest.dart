@@ -89,13 +89,13 @@ Future<void> _selectDate(BuildContext context) async {
         };
 
             final notifications  =  {
-                'Title':'Complain Request',
-                'Message':complainTextController.text,
-                'Types': 'Complaint',
-                'DateTime':Timestamp.now(),
-                'userid':'userAdmin'
-                
-            };
+            'isRead':false,
+            'title':'Maintenance Request',
+            'message':complainTextController.text,
+            'type': 'Complaint',
+            'timestamp':Timestamp.now(),
+            'userId':'userAdmin'
+         };
 
       _firestore.collection('Notifications').add(notifications);
       _firestore.collection('Complaints').add(complainData);
