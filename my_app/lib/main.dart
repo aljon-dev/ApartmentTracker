@@ -23,7 +23,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
@@ -55,7 +54,6 @@ class splashScreen  extends StatelessWidget{
               child:SizedBox(
                 width: double.infinity,
                 child:Card(
-
                   color: Colors.black26,
                   child: Center(
                     child: Text('APT TRACKER',style: TextStyle(
@@ -93,8 +91,6 @@ class splashScreen  extends StatelessWidget{
                     ),
                   ),
                 ),
-
-            
           ],
         ),
 

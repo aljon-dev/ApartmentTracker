@@ -29,7 +29,6 @@ class complainRequestState extends State<complainRequest> {
   final _fireAuth = FirebaseAuth.instance;
 
 
-
   final TextEditingController complainTitleController = TextEditingController();
   final TextEditingController complainTextController = TextEditingController();
   DateTime? selectedDate;
@@ -56,7 +55,6 @@ Future<void> _selectDate(BuildContext context) async {
       pickedDate.month,
       pickedDate.day,
     );
-
 
     setState(() {
       if ( dateOnly.isAfter(today)) {

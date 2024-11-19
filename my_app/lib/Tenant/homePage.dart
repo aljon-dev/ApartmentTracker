@@ -39,14 +39,23 @@ class homePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<homePage> {
+
+  // Firebasedatabase for Database and Auth 
   final _firestore = FirebaseFirestore.instance;
   final _fireAuth = FirebaseAuth.instance;
+
+
   String username = "";
+
+  // The selected Indexes for Navigations in the bottom
   int _selectedIndex = 0;
+
   late PageController _pageController;
 
+  // Current Date
   int dateMonth = DateTime.now().month - 1;
 
+  // List of months 
   List<String> Months = [
     "January",
     "February",
@@ -64,8 +73,7 @@ class _HomePageState extends State<homePage> {
 
   String? monthToday;
 
- 
-
+ // Get user Details 
   Future<void> getUserDetails() async {
      String userid =  _fireAuth.currentUser!.uid;
     DocumentSnapshot documentSnapshot =
@@ -88,6 +96,7 @@ class _HomePageState extends State<homePage> {
     _pageController.jumpToPage(index);
   }
 
+// Automatic Fetching the userData and Current Months 
   @override
   void initState() {
     super.initState();

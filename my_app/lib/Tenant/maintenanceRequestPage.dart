@@ -20,7 +20,7 @@ class _MaintenancerequestpageState extends State<Maintenancerequestpage> {
 
     
   List<String> priority = ['Low', 'Medium', 'High'];
-    String? selectedPriority;
+  String? selectedPriority;
 
   String username = "";
 
@@ -50,6 +50,7 @@ class _MaintenancerequestpageState extends State<Maintenancerequestpage> {
         await storageRef.putFile(_imageFile!);
         imageUrl = await storageRef.getDownloadURL();
       }
+      
       await _firestore.collection('maintenance_request').add({
         'Image': imageUrl,
         'Message': _messageController.text,
@@ -78,6 +79,7 @@ class _MaintenancerequestpageState extends State<Maintenancerequestpage> {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e'),backgroundColor: Colors.red,));
     }
   }
+
 /*
   Future<void> getUserDetails() async {
     DocumentSnapshot getuser =
