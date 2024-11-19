@@ -5,6 +5,7 @@
 
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:my_app/Tenant/manageSubAccount.dart';
 import 'package:my_app/loginPage.dart';
@@ -23,6 +24,7 @@ class settingsPage extends StatefulWidget{
 class _settingsPageState extends State<settingsPage> {
 
   final _firestore = FirebaseFirestore.instance;
+   final _fireAuth = FirebaseAuth.instance;
   String username = "";
   String userId = "";
 
@@ -32,7 +34,7 @@ class _settingsPageState extends State<settingsPage> {
 
   Future<void> getUserDetails() async {
 
-    DocumentSnapshot documentSnapshot = await _firestore.collection('tenant').doc(widget.userid).get();
+    DocumentSnapshot documentSnapshot = await _firestore.collection('tenants').doc(widget.userid).get();
 
     Map<String,dynamic>? userDoc = documentSnapshot.data() as Map<String,dynamic>?;
 
@@ -98,7 +100,8 @@ class _settingsPageState extends State<settingsPage> {
           title:Text('Log Out'),
 
           onTap:(){
-              
+              _fireAuth.signOut();
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> LoginPage()));
           }
 
         ),

@@ -185,7 +185,10 @@ class _HomePageState extends State<homePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 20),
+            const Text('Announcement',style:TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold
+            )),
             StreamBuilder<QuerySnapshot>(
               stream: _firestore.collection('announcement').snapshots(),
               builder: (BuildContext context,
@@ -237,6 +240,10 @@ class _HomePageState extends State<homePage> {
                 );
               },
             ),
+            const Text('Billings',style:TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold
+            )),
             StreamBuilder<QuerySnapshot>(
                 stream: _firestore
                     .collection('sales_record')

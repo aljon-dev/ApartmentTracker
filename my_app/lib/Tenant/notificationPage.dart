@@ -1,4 +1,5 @@
 // lib/Tenant/notificationPage.dart
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -13,6 +14,7 @@ class notificationPage extends StatefulWidget {
 
 class _notificationPageState extends State<notificationPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +25,7 @@ class _notificationPageState extends State<notificationPage> {
       body: StreamBuilder<QuerySnapshot>(
         stream: _firestore
             .collection('notifications')
-           /* .where('userId', isEqualTo: widget.userid) */
+            .where('userId', isEqualTo: _firebaseAuth.currentUser!.uid) 
             .orderBy('timestamp', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
