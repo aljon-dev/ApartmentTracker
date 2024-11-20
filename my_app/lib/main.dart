@@ -67,14 +67,11 @@ class splashScreen  extends StatelessWidget{
               )
               ),
             ),
-
               Padding(
                   padding: const EdgeInsets.only(bottom: 40.0),
                   child: ElevatedButton(
                     onPressed: () {
-
                         Navigator.push(context, MaterialPageRoute(builder: (context)=> LoginPage()));
-      
                     },
                     style: ElevatedButton.styleFrom(
                       

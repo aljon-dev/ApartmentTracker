@@ -246,7 +246,7 @@ class _HomePageState extends State<homePage> {
             )),
             StreamBuilder<QuerySnapshot>(
                 stream: _firestore
-                    .collection('sales_record')
+                    .collection('Billings')
                     .where('uid', isEqualTo: widget.userid)
                     .where('month', isEqualTo: Months[dateMonth])
                     .snapshots(),
