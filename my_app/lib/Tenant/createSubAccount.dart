@@ -1,12 +1,11 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class createSubAccount extends StatefulWidget {
-  final userid;
+  final String userid; // Changed to explicitly declare as String
 
   const createSubAccount({super.key, required this.userid});
 
@@ -20,7 +19,6 @@ class _createSubAccountPage extends State<createSubAccount> {
   String? _imageUrl;
 
   final _firestore = FirebaseFirestore.instance;
-
   final _nameController = TextEditingController();
   final _contactController = TextEditingController();
   final _remarksController = TextEditingController();
@@ -36,32 +34,72 @@ class _createSubAccountPage extends State<createSubAccount> {
   }
 
   Future<void> _addSubAccount() async {
-    if (_imageFile == null) return;
+    if (_imageFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a profile image')),
+      );
+      return;
+    }
+
+    if (_nameController.text.isEmpty || 
+        _contactController.text.isEmpty || 
+        _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all required fields')),
+      );
+      return;
+    }
 
     try {
-      // Upload the image
-      final fileName = DateTime.now().millisecondsSinceEpoch.toString();
-      final storageRef = FirebaseStorage.instance.ref();
-      final imageRef = storageRef.child('profile_images/$fileName');
-      UploadTask uploadTask = imageRef.putFile(_imageFile!);
-      final snapshot = await uploadTask.whenComplete(() {});
+      final QuerySnapshot querySnapshot = await _firestore
+          .collection('Sub-Tenant')
+          .where('mainAccountId', isEqualTo: widget.userid)
+          .get();
+
+      if (querySnapshot.docs.length >= 3) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Limit reached: Cannot add more than 3 sub-accounts.')),
+        );
+        return;
+      }
+
+     
+      final String fileName = '${widget.userid}_${DateTime.now().millisecondsSinceEpoch}';
+      final Reference storageRef = FirebaseStorage.instance
+          .ref()
+          .child('profile_images')
+          .child(fileName);
+      
+      final UploadTask uploadTask = storageRef.putFile(_imageFile!);
+      final TaskSnapshot snapshot = await uploadTask;
       _imageUrl = await snapshot.ref.getDownloadURL();
 
-      // Add sub-account details to Firestore
+     
       await _firestore.collection('Sub-Tenant').add({
         'mainAccountId': widget.userid,
-        'name': _nameController.text,
-        'contact': _contactController.text,
-        'remarks': _remarksController.text,
-        'password': _passwordController.text,
-        'image': _imageUrl ?? '',
+        'name': _nameController.text.trim(),
+        'contact': _contactController.text.trim(),
+        'remarks': _remarksController.text.trim(),
+        'password': _passwordController.text.trim(),
+        'profileImage': _imageUrl,
+        'createdAt': FieldValue.serverTimestamp(),
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Sub-Account Registered Successfully')),
+   
+      setState(() {
+        _imageFile = null;
+        _nameController.clear();
+        _contactController.clear();
+        _remarksController.clear();
+        _passwordController.clear();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sub-Account Registered Successfully')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(content: Text('Error: ${e.toString()}')),
       );
     }
   }
@@ -110,7 +148,7 @@ class _createSubAccountPage extends State<createSubAccount> {
                     TextFormField(
                       controller: _nameController,
                       decoration: const InputDecoration(
-                        labelText: 'Name',
+                        labelText: 'Name *',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -118,7 +156,7 @@ class _createSubAccountPage extends State<createSubAccount> {
                     TextFormField(
                       controller: _contactController,
                       decoration: const InputDecoration(
-                        labelText: 'Contact',
+                        labelText: 'Contact *',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -127,8 +165,7 @@ class _createSubAccountPage extends State<createSubAccount> {
                       controller: _remarksController,
                       decoration: const InputDecoration(
                         labelText: 'Remarks',
-                        hintText:
-                            'Please specify your relationship with the contractee',
+                        hintText: 'Please specify your relationship with the contractee',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -136,9 +173,10 @@ class _createSubAccountPage extends State<createSubAccount> {
                     TextFormField(
                       controller: _passwordController,
                       decoration: const InputDecoration(
-                        labelText: 'Password',
+                        labelText: 'Password *',
                         border: OutlineInputBorder(),
                       ),
+                      obscureText: true,
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
@@ -162,5 +200,14 @@ class _createSubAccountPage extends State<createSubAccount> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _contactController.dispose();
+    _remarksController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }

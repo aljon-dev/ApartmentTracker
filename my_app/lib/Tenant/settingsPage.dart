@@ -33,7 +33,7 @@ class _settingsPageState extends State<settingsPage> {
 
   Future<void> getUserDetails() async {
 
-    DocumentSnapshot documentSnapshot = await _firestore.collection('tenant').doc(widget.userid).get();
+    DocumentSnapshot documentSnapshot = await _firestore.collection('tenants').doc(widget.userid).get();
 
     Map<String,dynamic>? userDoc = documentSnapshot.data() as Map<String,dynamic>?;
 
