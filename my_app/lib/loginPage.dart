@@ -13,20 +13,17 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-    String _selectedRole = 'Tenant';
-    final _formKey = GlobalKey<FormState>();
+  String _selectedRole = 'Tenant';
+  final _formKey = GlobalKey<FormState>();
   final _fireAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
   bool _isLoading = false;
-   bool _isPasswordVisible = false;
-
+  bool _isPasswordVisible = false;
 
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-
-  String? _verificationId;
-
-
+  final TextEditingController _usernameController = TextEditingController();
+   final TextEditingController _resetEmailController = TextEditingController();
 
   Future<void> login() async {
     if (!_formKey.currentState!.validate()) {
@@ -38,177 +35,156 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-     
-      final userCredential = await _fireAuth.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
+      if (_selectedRole == 'Tenant') {
+        // Existing tenant login logic
+        final userCredential = await _fireAuth.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
 
         DocumentSnapshot documentSnapshot = await _firestore
-        .collection('tenants')
-        .doc(userCredential.user!.uid)
-        .get();
+            .collection('tenants')
+            .doc(userCredential.user!.uid)
+            .get();
 
-        if(documentSnapshot.exists){
-          Map<String,dynamic> userData = documentSnapshot.data() as Map<String,dynamic>;
+        if (documentSnapshot.exists) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => homePage(userid: userCredential.user!.uid),
+            ),
+          );
+        }
+      } else {
+        // Sub-account login logic
+        QuerySnapshot querySnapshot = await _firestore
+            .collection('sub_accounts')
+            .where('username', isEqualTo: _usernameController.text.trim())
+            .where('password', isEqualTo: _passwordController.text)
+            .get();
 
-          Navigator.push(context, MaterialPageRoute(builder: (context)=> homePage(userid: userCredential.user!.uid)));
-    /*
-        await _fireAuth.verifyPhoneNumber(
-        phoneNumber: '+63${userData['contact']}',
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await _handlePhoneVerificationComplete(credential, userCredential.user!.uid);
-        },
-        verificationFailed: _handleVerificationFailed,
-        codeSent: (String verificationId, int? resendToken) {
-          _handleCodeSent(verificationId, userCredential.user!.uid);
-        },
-        codeAutoRetrievalTimeout: _handleCodeAutoRetrievalTimeout,
-      );
-      */
-    } 
+        if (querySnapshot.docs.isNotEmpty) {
+          // Get the first matching document
+          DocumentSnapshot subAccount = querySnapshot.docs.first;
+          String userId = subAccount.id;
 
-    
-      // Then start phone verification
-      
+          // Navigate to home page with sub-account userId
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => homePage(userid: userId),
+            ),
+          );
+        } else {
+          _showErrorSnackBar('Invalid username or password');
+        }
+      }
     } catch (e) {
+      _showErrorSnackBar('An unexpected error occurred. Please try again.');
+    } finally {
       setState(() {
         _isLoading = false;
       });
-      _showErrorSnackBar('An unexpected error occurred. Please try again.');
     }
   }
 
-  Future<void> _showErrorSnackBar(String Messages) async{
-    if(!mounted) return;
-     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('An Error Occured'),backgroundColor: Colors.red[200],)); 
-  
-  }
 
-/*
-  Future<void> _handlePhoneVerificationComplete(PhoneAuthCredential credential, String userId) async {
-    try {
-      await _fireAuth.currentUser?.updatePhoneNumber(credential);
-     
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Verification Complete')),
-        );
-          Navigator.push(context, MaterialPageRoute(builder: (context)=> homePage(userid: userId)));
-
-      }
-    } catch (e) {
-      _showErrorSnackBar('Error completing verification: $e');
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  void _handleVerificationFailed(FirebaseAuthException e) {
-    setState(() {
-      _isLoading = false;
-    });
-    _showErrorSnackBar('Verification failed: ${e.message}');
-  }
-
-  void _handleCodeSent(String verificationId, String userId) {
-    setState(() {
-      _verificationId = verificationId;
-      _isLoading = false;
-    });
-    
-    _showVerificationDialog(userId);
-  }
-
-  void _handleCodeAutoRetrievalTimeout(String verificationId) {
-    setState(() {
-      _verificationId = verificationId;
-      _isLoading = false;
-    });
-  }
-
-  
-  void _showVerificationDialog(String userId) {
+  void _showResetPasswordDialog() {
     showDialog(
       context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Verify Phone Number'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Enter the verification code sent to your phone:'),
-            TextField(
-              keyboardType: TextInputType.number,
-              maxLength: 6,
-              decoration: const InputDecoration(
-                hintText: '000000',
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Reset Password'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Please enter your email address. We will send you a password reset link.',
+                style: TextStyle(fontSize: 14),
               ),
-              onChanged: (value) {
-                if (value.length == 6) {
-                  _verifyCode(value, userId);
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _resetEmailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  hintText: "Enter your email",
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your email';
+                  }
+                  if (!value.contains('@') || !value.contains('.')) {
+                    return 'Please enter a valid email address';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _resetEmailController.clear();
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (_resetEmailController.text.isNotEmpty) {
+                  try {
+                    await _fireAuth.sendPasswordResetEmail(
+                      email: _resetEmailController.text.trim(),
+                    );
+                    Navigator.of(context).pop();
+                    _showSuccessSnackBar('Password reset email sent successfully');
+                    _resetEmailController.clear();
+                  } catch (e) {
+                    Navigator.of(context).pop();
+                    _showErrorSnackBar('Error sending reset email. Please try again.');
+                    _resetEmailController.clear();
+                  }
+                } else {
+                  _showErrorSnackBar('Please enter your email address');
                 }
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Send Reset Link'),
             ),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Clean up if user cancels verification
-              _fireAuth.currentUser?.delete();
-            },
-            child: const Text('Cancel'),
-          ),
-        ],
+        );
+      },
+    );
+  }
+
+    Future<void> _showSuccessSnackBar(String message) async {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green[200],
       ),
     );
   }
 
-  Future<void> _verifyCode(String code, String userId) async {
-    if (_verificationId == null) return;
-
-    try {
-      setState(() {
-        _isLoading = true;
-      });
-
-      PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: _verificationId!,
-        smsCode: code,
-      );
-
-      await _handlePhoneVerificationComplete(credential, userId);
-    } catch (e) {
-      _showErrorSnackBar('Invalid verification code');
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+  Future<void> _showErrorSnackBar(String message) async {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red[200],
+      ),
+    );
   }
-
- 
-
-  String _getFirebaseErrorMessage(String code) {
-    switch (code) {
-      case 'email not found':
-        return 'email not found';
-      case 'invalid-email':
-        return 'Please enter a valid email address';
-      case 'weak-password':
-        return 'Password should be at least 6 characters';
-      default:
-        return 'An error occurred during registration';
-    }
-  }
-*/
 
   @override
   Widget build(BuildContext context) {
@@ -265,30 +241,53 @@ class _LoginPageState extends State<LoginPage> {
                     },
                   ),
                   const SizedBox(height: 20),
-                  const Text("Email:"),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      hintText: "Enter your email",
-                      filled: true,
-                      fillColor: Colors.grey[200],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide.none,
+                  if (_selectedRole == 'Tenant') ...[
+                    const Text("Email:"),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        hintText: "Enter your email",
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        if (!value.contains('@') || !value.contains('.')) {
+                          return 'Please enter a valid email address';
+                        }
+                        return null;
+                      },
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!value.contains('@') || !value.contains('.')) {
-                        return 'Please enter a valid email address';
-                      }
-                      return null;
-                    },
-                  ),
+                  ] else ...[
+                    const Text("Username:"),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: _usernameController,
+                      decoration: InputDecoration(
+                        hintText: "Enter your username",
+                        filled: true,
+                        fillColor: Colors.grey[200],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your username';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
                   const SizedBox(height: 20),
                   const Text("Password:"),
                   const SizedBox(height: 10),
@@ -327,26 +326,13 @@ class _LoginPageState extends State<LoginPage> {
                     },
                   ),
                   const SizedBox(height: 20),
-                  Row(
+                  if (_selectedRole == 'Tenant')
+                Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Text('Forgot your password?'),
                       TextButton(
-                        onPressed: () {
-                          // Implement password reset functionality
-                          if (_emailController.text.isNotEmpty) {
-                            _fireAuth.sendPasswordResetEmail(
-                              email: _emailController.text.trim(),
-                            );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Password reset email sent'),
-                              ),
-                            );
-                          } else {
-                            _showErrorSnackBar('Please enter your email first');
-                          }
-                        },
+                        onPressed: _showResetPasswordDialog,
                         child: const Text(
                           "Reset Password",
                           style: TextStyle(color: Colors.blue),
@@ -373,7 +359,8 @@ class _LoginPageState extends State<LoginPage> {
                               width: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
                           : const Text(
