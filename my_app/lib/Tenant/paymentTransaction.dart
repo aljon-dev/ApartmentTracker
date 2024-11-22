@@ -49,13 +49,15 @@ class _paymentTransactionState extends State<paymentTransaction> {
 
       final StorageRef = FirebaseStorage.instance.ref();
 
-      final imageRef = StorageRef.child('GcashImages/ filename');
+final imageRef = StorageRef.child('GcashImages/$filename');
+
+  
 
       UploadTask uploadpic  = imageRef.putFile(imagePath!);
       final snapshot = await uploadpic.whenComplete(() {});
       ImageUrl = await snapshot.ref.getDownloadURL();
 
-      await _firestore.collection('sales_record').doc(widget.salesId).update({
+      await _firestore.collection('Billings').doc(widget.salesId).update({
             'imageUrl' : ImageUrl,
             'payer_name':  _nameController.text,
             'GcashNumber': _GcashNumberController.text,

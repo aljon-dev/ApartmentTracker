@@ -28,7 +28,7 @@ class  _TransactionscreenState  extends State<Transactionscreen> {
 
   Future <void>  getTransaction() async {
 
-      DocumentSnapshot documentSnapshot = await _firestore.collection('sales_record')
+      DocumentSnapshot documentSnapshot = await _firestore.collection('Billings')
       .doc(widget.salesId)
       .get();
 

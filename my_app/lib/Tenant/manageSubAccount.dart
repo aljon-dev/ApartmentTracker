@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import 'package:flutter/material.dart';
 import 'package:my_app/Tenant/createSubAccount.dart';
 import 'package:my_app/Tenant/subTenantList.dart';
