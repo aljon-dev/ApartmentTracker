@@ -51,7 +51,7 @@ Widget buildAddUserCard(BuildContext context,String userid,String title){
         switch(title){
           case "AddSub":  Navigator.push(context, MaterialPageRoute(builder: (context)=> createSubAccount(userid: userid) ));
           break;
-          case "SubTenant List":  Navigator.push(context, MaterialPageRoute(builder: (context)=> subTenantlist(userid: userid) ));
+          case "SubTenant List":  Navigator.push(context, MaterialPageRoute(builder: (context)=> subTenantList(userid: userid) ));
          
        
         }
