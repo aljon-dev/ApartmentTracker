@@ -6,42 +6,44 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:my_app/Tenant/editAccountPage.dart';
-import 'package:my_app/Tenant/manageSubAccount.dart';
+import 'package:my_app/Sub_Tenant/editAccountSub.dart';
 import 'package:my_app/Tenant/notificationPage.dart';
 import 'package:my_app/loginPage.dart';
 
-class settingsPage extends StatefulWidget{
+class settingsPageSub extends StatefulWidget{
   final String userid;
 
-  const settingsPage ({super.key, required this.userid});
+  const settingsPageSub ({super.key, required this.userid});
 
   @override
-  _settingsPageState createState() => _settingsPageState();
+  _settingsPageSubState createState() => _settingsPageSubState();
   
 
 }
 
-class _settingsPageState extends State<settingsPage> {
+class _settingsPageSubState extends State<settingsPageSub> {
 
   final _firestore = FirebaseFirestore.instance;
   String username = "";
   String userId = "";
-  String? imageUrl;
+  String imageUser = "";
 
   bool isPushNotificationEnabled = true;
 
+
+
   Future<void> getUserDetails() async {
 
-    DocumentSnapshot documentSnapshot = await _firestore.collection('tenants').doc(widget.userid).get();
+    DocumentSnapshot documentSnapshot = await _firestore.collection('Sub-Tenant').doc(widget.userid).get();
 
     Map<String,dynamic>? userDoc = documentSnapshot.data() as Map<String,dynamic>?;
 
     if(userDoc != null){
       setState(() {
-        imageUrl = userDoc['profile'];
-        username = userDoc['username'] ?? 'No username Found';
+
+        username = userDoc['name'] ?? 'No username Found';
         userId = documentSnapshot.id;
+        imageUser = userDoc['image'];
         
       });
     } 
@@ -55,6 +57,8 @@ class _settingsPageState extends State<settingsPage> {
   
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,13 +70,16 @@ class _settingsPageState extends State<settingsPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ListTile(
-          leading: imageUrl != null ? CircleAvatar(backgroundImage: NetworkImage(imageUrl!),radius: 25,) : CircleAvatar(radius:25),
-          
+          leading: 
+          CircleAvatar(
+            backgroundColor: Colors.grey,
+            child:Image.network(imageUser)
+          ),
           title: Text(username),
-          subtitle: const Text('Tenant'),
+          subtitle: const Text('Sub Tenant'),
           trailing: InkWell(
             onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> notificationPage(userid: widget.userid,)));
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> notificationPage(userid: widget.userid)));
             },
             child: Icon(Icons.notifications_active_outlined),
           ) ,
@@ -81,34 +88,27 @@ class _settingsPageState extends State<settingsPage> {
 
         const Text('Settings', style:TextStyle(fontSize: 18,fontWeight:  FontWeight.bold)),
 
-       
-
-        ListTile(
-         leading: const Icon(Icons.person_2_outlined,color:Colors.blue),
-         title:const Text('Manage Sub Account'),
-  
-         onTap: (){
-          
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> manageSubAccount(userid: userId)));
-
-         },
+        SwitchListTile(
+          title:const Text('Push Notification'),
+          value: isPushNotificationEnabled,
+          onChanged: (bool value){
+          setState(() {
+            isPushNotificationEnabled = value;
+          });
+        },
+        activeColor: Colors.green,
         ),
 
+      
           ListTile(
           leading:const Icon(Icons.settings,color:Colors.blue),
           title:Text('Edit Account '),
           onTap:(){
-              Navigator.push(context, MaterialPageRoute(builder: (context)=> editAccountPage(userid:widget.userid)));
+              Navigator.push(context, MaterialPageRoute(builder: (context)=> editAccountSubPage(userid: widget.userid)));
           }
 
         ),
 
-   
-        
-
-
-
-        
           const Divider(),
         ListTile(
           leading:const Icon(Icons.logout,color:Colors.blue),
@@ -120,17 +120,11 @@ class _settingsPageState extends State<settingsPage> {
 
         ),
 
-        const Divider(),
-
-        
-      
-
+        const Divider()
 
       ],
     ),
     )
-
-
     );
   }
 }

@@ -2,16 +2,16 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class notificationPage extends StatefulWidget {
+class notificationSubPage extends StatefulWidget {
   final String userid;
 
-  const notificationPage({Key? key, required this.userid}) : super(key: key);
+  const notificationSubPage({Key? key, required this.userid}) : super(key: key);
 
   @override
   _notificationPageState createState() => _notificationPageState();
 }
 
-class _notificationPageState extends State<notificationPage> {
+class _notificationPageState extends State<notificationSubPage> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   @override
@@ -21,9 +21,10 @@ class _notificationPageState extends State<notificationPage> {
         title: const Text('Notifications'),
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: _firestore
+       stream: _firestore
             .collection('notifications')
-            .where('userId', isEqualTo: widget.userid)
+            .where('userId',isEqualTo: widget.userid)
+            .where('type', isNotEqualTo: 'message')  
             .orderBy('timestamp', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
@@ -64,10 +65,7 @@ class _notificationPageState extends State<notificationPage> {
                   icon = Icons.payment;
                   color = Colors.blue;
                   break;
-                case 'message':
-                  icon = Icons.message;
-                  color = Colors.purple;
-                  break;
+         
                 case 'announcement':
                   icon = Icons.announcement;
                   color = Colors.red;

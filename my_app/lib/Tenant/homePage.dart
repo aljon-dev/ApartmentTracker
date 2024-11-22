@@ -44,7 +44,7 @@ class _HomePageState extends State<homePage> {
   final _firestore = FirebaseFirestore.instance;
   final _fireAuth = FirebaseAuth.instance;
 
-
+  
   String username = "";
 
   // The selected Indexes for Navigations in the bottom
@@ -102,9 +102,12 @@ class _HomePageState extends State<homePage> {
     super.initState();
     monthToday = Months[dateMonth];
 
+    
+  
     setState(() {
       getUserDetails();
       _pageController = PageController();
+      
     });
   }
 
@@ -143,7 +146,7 @@ class _HomePageState extends State<homePage> {
           ),
           actions: [
             IconButton(onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context)=> notificationPage()));
+                Navigator.push(context, MaterialPageRoute(builder: (context)=> notificationPage(userid:widget.userid)));
             }, icon: const Icon(Icons.notifications))
           ]),
       body: PageView(
